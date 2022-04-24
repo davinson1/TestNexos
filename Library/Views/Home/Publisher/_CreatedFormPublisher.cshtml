@@ -1,0 +1,59 @@
+﻿ <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="staticBackdropLabel">{{modalTitle}}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            
+                <form>
+
+                  <div class="row mb-3">
+                    <div class="col-12">
+                      <label for="Name">Nombre Completo (<span class="text-danger">*</span>)</label>
+                      <input id="Name" class="form-control focus" type="text"  required="" v-model="Publisher.Name">
+                    </div>
+                  </div>
+                  
+                  <div class="row mb-3">
+                    <div class="col-12">
+                      <label for="CorrespondenceAddress">Dirección de correspondencia (<span class="text-danger">*</span>)</label>
+                      <input id="CorrespondenceAddress" class="form-control focus" type="date"  required="" v-model="Publisher.CorrespondenceAddress">
+                    </div>
+                  </div>
+
+                  <div class="row mb-3">
+                    <div class="col-12">
+                      <label for="Telephone">Telefono (<span class="text-danger">*</span>)</label>
+                      <input id="Telephone" class="form-control focus" type="number"  required="" v-model="Publisher.Telephone">
+                    </div>
+                  </div>
+                  
+                  <div class="row mb-3">
+                    <div class="col-12">
+                      <label for="Email">Email (<span class="text-danger">*</span>)</label>
+                      <input id="Email" class="form-control focus" type="email"  required="" v-model="Publisher.Email">
+                    </div>
+                  </div>
+                  
+                  <div class="row mb-3">
+                    <div class="col-12">
+                      <label for="MaximumBooksRegistered">Maximo de libros Permitidos (<span class="text-danger">*</span>)</label>
+                      <input id="MaximumBooksRegistered" class="form-control focus" type="number"  value='0' min='1' required="" v-model="Publisher.MaximumBooksRegistered">
+                    </div>
+                  </div>
+
+                </form>
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            <button type="submit" v-on:click.prevent="Create" v-if="btnCreate" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+            <button type="submit" v-on:click.prevent="Update" v-if="btnUpdate" class="btn btn-primary"><i class="fas fa-save"></i> Actualizar</button>
+
+          </div>
+        </div>
+      </div>
+    </div>
+

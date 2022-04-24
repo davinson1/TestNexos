@@ -1,0 +1,244 @@
+﻿@{
+    ViewData["Title"] = "Gestión Editoriales";
+}
+<h1>@ViewData["Title"]</h1>
+
+<div id="app" class="row">
+
+    <!-- load -->
+    <div class="text-center" id="loading">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+        <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary float-right" v-on:click="OpenModalCreate">
+      Registrar
+    </button>
+
+    <!-- Modal -->
+    @await Html.PartialAsync("_CreatedFormPublisher.cshtml")
+
+      <!-- search -->
+     <div class="form-group mt-2">
+        <input type="search" v-model="search" class="form-control" placeholder="Buscar....">
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Dirección de correspondencia</th>
+                <th scope="col">Telefono</th>
+                <th scope="col">Email</th>
+                <th scope="col">Maximo libros registrados</th>
+                <th scope="col">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="(item, key) in Search" :key="key">
+                <td>{{item.id}}</td>
+                <td>{{item.name}}</td>
+                <td>{{item.correspondenceAddress }}</td>
+                <td>{{item.telephone}}</td>
+                <td>{{item.email}}</td>
+                <td>{{item.maximumBooksRegistered}}</td>
+                <td>
+                    <button class="btn btn-primary btn-sm" v-on:click="OpenModalUpdate(item)" type="button"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-danger btn-sm" v-on:click="Delete(item)" type="button"><i class="fas fa-trash"></i></button>
+               </td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<script>
+    var app = new Vue({
+        el: "#app",
+        mounted()
+        {
+            this.GetPublishers();
+        },
+        data:
+        {
+            serverRoute: 'https://localhost:7290/api/publisher/',
+            publishers:[],
+            Publisher:{Name:'',CorrespondenceAddress:'',Telephone:'',Email:'',MaximumBooksRegistered:''},
+            modalTitle:'',
+            modalTitle:'',
+            btnCreate:true,
+            btnUpdate:false,
+            idPublisher:'',
+            search: ''
+        },
+        methods:
+        {
+             Update()
+            {
+                const publisher = {
+                    Id: this.idPublisher,
+                    Name:this.Publisher.Name,
+                    CorrespondenceAddress:this.Publisher.CorrespondenceAddress,
+                    Telephone:this.Publisher.Telephone,
+                    Email: this.Publisher.Email,
+                    MaximumBooksRegistered: this.Publisher.MaximumBooksRegistered,
+                };
+                   axios.put(this.serverRoute+'update/'+this.idPublisher,publisher).then((res) =>{
+                    this.GetPublishers();
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('staticBackdrop')).hide()
+                    this.CleanFields();
+                    this.idPublisher = '';
+                    Swal.fire({
+                      position: 'top-end',
+                      icon: 'success',
+                      title: 'Editorial ' + this.Publisher.Name + ' actualizado correctamente',
+                      showConfirmButton: false,
+                      timer: 5000,
+                      timerProgressBar: true,
+                    });
+                }).catch(function (error) {
+                    console.log(error.response)
+                    var array = Object.values(error.response.data.errors);
+                    Swal.fire({
+                      position: 'top-end',
+                      showConfirmButton: false,
+                      icon: 'error',
+                      title: 'Oops...',
+                      text: array,
+                      timer: 5000,
+                      timerProgressBar: true,
+                    })
+                });
+            },
+
+            OpenModalUpdate(item){
+                this.CleanFields();
+                this.Publisher.Name = item.name;
+                this.Publisher.CorrespondenceAddress = item.correspondenceAddress;
+                this.Publisher.Telephone = item.telephone;
+                this.Publisher.Email = item.email;
+                this.Publisher.MaximumBooksRegistered = item.maximumBooksRegistered;
+                this.btnUpdate=true;
+                this.btnCreate=false;
+                var myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'))
+                myModal.show();
+                this.modalTitle = 'Editar Editorial: ' + item.name;
+                this.idPublisher = item.id;
+            },
+
+              Create()
+            {
+               let publisher = {
+                    Name:this.Publisher.Name,
+                    CorrespondenceAddress:this.Publisher.CorrespondenceAddress,
+                    Telephone:this.Publisher.Telephone,
+                    Email:this.Publisher.Email,
+                    MaximumBooksRegistered: this.Publisher.MaximumBooksRegistered == '' ? 0 : this.Publisher.MaximumBooksRegistered
+               }
+                axios.post(this.serverRoute+'create',publisher).then((res) =>{
+                    this.GetPublishers();
+                    this.CleanFields();
+                    Swal.fire({
+                      position: 'top-end',
+                      icon: 'success',
+                      title: 'Editorial ' + this.Publisher.Name + ' creado correctamente',
+                      showConfirmButton: false,
+                      timer: 5000,
+                      timerProgressBar: true,
+                    });
+                }).catch(function (error) {
+                    var array = Object.values(error.response.data.errors);
+                    Swal.fire({
+                      position: 'top-end',
+                      showConfirmButton: false,
+                      icon: 'error',
+                      title: 'Oops...',
+                      text: array,
+                      timer: 5000,
+                      timerProgressBar: true,
+                    })
+                });
+            },
+
+
+            GetPublishers()
+            {
+                axios.get(this.serverRoute+'index')
+                .then(response => {
+                    this.publishers = response.data;
+                    let loadgin = document.getElementById("loading");
+                    loadgin.style.display = 'none';
+                })
+                .catch(e => {
+                    console.log(e);
+                });
+            },
+
+            OpenModalCreate(){
+                var myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'))
+                myModal.show();
+                this.CleanFields();
+                this.modalTitle = 'Crear Editoriales';
+                this.btnUpdate=false;
+                this.btnCreate=true;
+            },
+              CleanFields(){
+                this.Publisher.Name = '';
+                this.Publisher.CorrespondenceAddress = '';
+                this.Publisher.Telephone = '';
+                this.Publisher.Email = '';
+                this.Publisher.MaximumBooksRegistered = '';
+            },
+
+             Delete(item){
+                Swal.fire({
+                  title: 'Esta seguro de eliminar a ' + item.name,
+                  icon: 'warning',
+                  showCancelButton: true,
+                  confirmButtonColor: '#3085d6',
+                  cancelButtonColor: '#d33',
+                  confirmButtonText: 'Si'
+                }).then((result) => {
+                  if (result.isConfirmed) {
+                      axios.delete(this.serverRoute+'delete/'+item.id)
+                      .then((res)=>{
+                            this.GetPublishers();
+                            Swal.fire(
+                              'Deleted!',
+                              'La editora fue eliminadas correctamente',
+                              'success'
+                            );
+                        }).catch(function (error) {
+                            var array = Object.values(error.response.data.errors);
+                            Swal.fire({
+                              position: 'top-end',
+                              showConfirmButton: false,
+                              icon: 'error',
+                              title: 'Oops...',
+                              text: array,
+                              timer: 5000,
+                              timerProgressBar: true,
+                            })
+                        });
+                  }
+                });
+            }
+ 
+        },
+
+        computed:{
+            Search:function(){
+                return this.publishers.filter(x=>{
+                    return x.name.includes(this.search)  || x.correspondenceAddress.includes(this.search) || x.email.includes(this.search) 
+                });
+            }
+        }
+
+    });
+
+</script>
+
+

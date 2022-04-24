@@ -1,0 +1,240 @@
+﻿@{
+    ViewData["Title"] = "Gestión Autores";
+}
+<h1>@ViewData["Title"]</h1>
+
+<div id="app" class="row">
+
+    <!-- load -->
+    <div class="text-center" id="loading">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary float-right" v-on:click="OpenModalCreate">
+      Registrar
+    </button>
+
+    <!-- Modal -->
+    @await Html.PartialAsync("_CreatedForm.cshtml")
+
+    <!-- search -->
+     <div class="form-group mt-2">
+        <input type="search" v-model="search" class="form-control" placeholder="Buscar....">
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Fecha de Nacimiento</th>
+                <th scope="col">Cuidad</th>
+                <th scope="col">Email</th>
+                <th scope="col">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="(author, key) in Search" :key="key">
+                <td>{{author.id}}</td>
+                <td>{{author.fullName}}</td>
+                <td>{{getHumanDate(author.dateOfBirth)}}</td>
+                <td>{{author.cityOfOrigin}}</td>
+                <td>{{author.email}}</td>
+                <td>
+                    <button class="btn btn-primary btn-sm" v-on:click="OpenModalUpdate(author)" type="button"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-danger btn-sm" v-on:click="DeleteAuthor(author)" type="button"><i class="fas fa-trash"></i></button>
+               </td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<script>
+    var app = new Vue({
+        el: "#app",
+        mounted()
+        {
+            this.GetAuthors();
+        },
+        data:
+        {
+            serverRoute: 'https://localhost:7290/',
+            authors:[],
+            Authors:{FullName:'',DateOfBirth:'',CityOfOrigin:'',Email:''},
+            modalTitle:'',
+            btnCreate:true,
+            btnUpdate:false,
+            idAuthor: '',
+            search: '',
+        },
+        methods:
+        {
+            Update()
+            {
+                const authors = {
+                    Id: this.idAuthor,
+                    FullName:this.Authors.FullName,
+                    DateOfBirth: this.Authors.DateOfBirth,
+                    CityOfOrigin: this.Authors.CityOfOrigin,
+                    Email: this.Authors.Email
+                };
+                   axios.put(this.serverRoute+'api/author/update/'+this.idAuthor,authors).then((res) =>{
+                    this.GetAuthors();
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('staticBackdrop')).hide()
+                    this.CleanFields();
+                    this.idAuthor = '';
+                    Swal.fire({
+                      position: 'top-end',
+                      icon: 'success',
+                      title: 'Autor ' + this.Authors.FullName + ' actualizado correctamente',
+                      showConfirmButton: false,
+                      timer: 5000,
+                      timerProgressBar: true,
+                    });
+                }).catch(function (error) {
+                    console.log(error.response)
+                    var array = Object.values(error.response.data.errors);
+                    Swal.fire({
+                      position: 'top-end',
+                      showConfirmButton: false,
+                      icon: 'error',
+                      title: 'Oops...',
+                      text: array,
+                      timer: 5000,
+                      timerProgressBar: true,
+                    })
+                });
+            },
+
+            CleanFields(){
+                this.Authors.FullName = '';
+                this.Authors.DateOfBirth = '';
+                this.Authors.CityOfOrigin = '';
+                this.Authors.Email = '';
+            },
+ 
+           getHumanDate(date) 
+           {
+                return moment(date, 'YYYY-MM-DD').format('DD/MM/YYYY');
+            },
+
+            GetAuthors()
+            {
+                axios.get(this.serverRoute+'api/author/index')
+                .then(response => {
+                    this.authors = response.data;
+                    let loadgin = document.getElementById("loading");
+                    loadgin.style.display = 'none';
+                })
+                .catch(e => {
+                    console.log(e);
+                });
+            },
+
+            OpenModalCreate(){
+                var myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'))
+                myModal.show();
+                this.CleanFields();
+                this.modalTitle = 'Crear Autor';
+                this.btnUpdate=false;
+                this.btnCreate=true;
+            },
+            
+            OpenModalUpdate(author){
+                this.CleanFields();
+                this.Authors.FullName = author.fullName;
+                this.Authors.DateOfBirth = author.dateOfBirth;
+                this.Authors.CityOfOrigin = author.cityOfOrigin;
+                this.Authors.Email = author.email;
+                this.btnUpdate=true;
+                this.btnCreate=false;
+                var myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'))
+                myModal.show();
+                this.modalTitle = 'Editar Autor: ' + author.fullName;
+                this.idAuthor = author.id;
+            },
+
+            Create()
+            {
+               let authors = {
+                    FullName:this.Authors.FullName,
+                    DateOfBirth: this.Authors.DateOfBirth,
+                    CityOfOrigin: this.Authors.CityOfOrigin,
+                    Email: this.Authors.Email
+               }
+                axios.post(this.serverRoute+'api/author/create',authors).then((res) =>{
+                    this.GetAuthors();
+                    this.CleanFields();
+                    Swal.fire({
+                      position: 'top-end',
+                      icon: 'success',
+                      title: 'Autor' + this.Authors.FullName + ' creado correctamente',
+                      showConfirmButton: false,
+                      timer: 5000,
+                      timerProgressBar: true,
+                    });
+                }).catch(function (error) {
+                    var array = Object.values(error.response.data.errors);
+                    Swal.fire({
+                      position: 'top-end',
+                      showConfirmButton: false,
+                      icon: 'error',
+                      title: 'Oops...',
+                      text: array,
+                      timer: 5000,
+                      timerProgressBar: true,
+                    })
+                });
+            },
+
+            DeleteAuthor(author){
+                console.log(author)
+                Swal.fire({
+                  title: 'Esta seguro de eliminar a ' + author.fullName,
+                  icon: 'warning',
+                  showCancelButton: true,
+                  confirmButtonColor: '#3085d6',
+                  cancelButtonColor: '#d33',
+                  confirmButtonText: 'Si'
+                }).then((result) => {
+                  if (result.isConfirmed) {
+                      axios.delete(this.serverRoute+'api/author/delete/'+author.id)
+                      .then((res)=>{
+                            this.GetAuthors();
+                            Swal.fire(
+                              'Deleted!',
+                              'El autor ' + author.fullName + 'fue eliminado correctamente',
+                              'success'
+                            );
+                        }).catch(function (error) {
+                            var array = Object.values(error.response.data.errors);
+                            Swal.fire({
+                              position: 'top-end',
+                              showConfirmButton: false,
+                              icon: 'error',
+                              title: 'Oops...',
+                              text: array,
+                              timer: 5000,
+                              timerProgressBar: true,
+                            })
+                        });
+                  }
+                });
+            }
+        },
+
+        computed:{
+            Search:function(){
+                return this.authors.filter(x=>{
+                    return x.fullName.includes(this.search)  || x.dateOfBirth.includes(this.search) || x.cityOfOrigin.includes(this.search)  || x.email.includes(this.search)
+                });
+            }
+        }
+
+    });
+
+</script>

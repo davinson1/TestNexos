@@ -1,0 +1,67 @@
+﻿
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">{{modalTitle}}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <form>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label for="Year">Año de publicación (<span class="text-danger">*</span>)</label>
+                                <input id="Year" class="form-control focus" type="text" required="" v-model="Book.Year">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label for="Title">Título (<span class="text-danger">*</span>)</label>
+                                <input id="Title" class="form-control focus" type="text" required="" v-model="Book.Title">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label for="Gender">Genero (<span class="text-danger">*</span>)</label>
+                                <input id="Gender" class="form-control focus" type="text" required="" v-model="Book.Gender">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label for="NumberOfPages">Número de paginas (<span class="text-danger">*</span>)</label>
+                                <input id="NumberOfPages" class="form-control focus" type="number"  min='1' required="" v-model="Book.NumberOfPages">
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="PublisherId">Seleccione la Editorial</label>
+                            <select id="PublisherId" class="form-control" v-model="Book.PublisherId" required="">
+                                <option v-for="item in publishers" v-bind:value="item.id">{{ item.id }} - {{ item.name }}</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="AuthorId">Seleccione el Autor</label>
+                            <select id="AuthorId" class="form-control" v-model="Book.AuthorId" required="">
+                                <option v-for="item in authors" v-bind:value="item.id">{{ item.id }} - {{ item.fullName }}</option>
+                            </select>
+                        </div>
+
+                    </form>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" v-on:click.prevent="Create" v-if="btnCreate" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+                        <button type="submit" v-on:click.prevent="Update" v-if="btnUpdate" class="btn btn-primary"><i class="fas fa-save"></i> Actualizar</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
